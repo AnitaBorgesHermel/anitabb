@@ -1,0 +1,25 @@
+services:
+    directus:
+        image: directus/directus:11.6
+        secrets:
+            - admin_password
+            - secret_key
+        ports:
+            - 8055:8055
+        volumes:
+            - ./database:/directus/database
+            - ./uploads:/directus/uploads
+            - ./extensions:/directus/extensions
+        environment:
+            SECRET_FILE: /run/secrets/secret_key
+            ADMIN_EMAIL: "anita.borges@marconirovereto.it"
+            ADMIN_PASSWORD_FILE: /run/secrets/admin_password
+            DB_CLIENT: "sqlite3"
+            DB_FILENAME: "/directus/database/data.db"
+            WEBSOCKETS_ENABLED: "true"
+
+secrets:
+  admin_password:
+    file: ./.admin_password
+  secret_key:
+    file: ./.secret_key
