@@ -1,0 +1,66 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import directus, { type Work } from "../../lib/directus";
+import { readItems } from "@directus/sdk";
+import { marked } from "marked";
+
+const { id } = Astro.params;
+const works = await directus.request(
+  readItems("works", {
+    filter: {
+      id: {
+        _eq: parseInt(id as string),
+      },
+    },
+    fields: ["*", { creator: ["*", { user: ["*"] }] }],
+  })
+);
+
+const work = works[0] as Work;
+if (!work || typeof work !== "object") {
+  throw new Error("Work not found");
+}
+if (!work.creator || typeof work.creator !== "object") {
+  throw new Error("Creator not found");
+}
+if (!work.creator.user || typeof work.creator.user !== "object") {
+  throw new Error("User not found");
+}
+const content = work.content ? marked(work.content) : "";
+const description = work.description ? marked(work.description) : "";
+const user = work?.creator?.user;
+const directusAssetsUrl = import.meta.env.PUBLIC_DIRECTUS_URL + "/assets";
+---
+
+<Layout title={work.title}>
+  <main class="container mx-auto px-4 py-8">
+    <h1>{work.title}</h1>
+    {
+      work.image && (
+        <img
+          src={`${directusAssetsUrl}/${work.image}`}
+          alt={work.title}
+          class="w-full h-48 object-cover"
+        />
+      )
+    }
+    {
+      user && (
+        <div class="flex items-center gap-2 mb-4">
+          {user.avatar && (
+            <img
+              src={`${directusAssetsUrl}/${user.avatar}`}
+              alt={`${user.first_name}'s avatar`}
+              class="w-10 h-10 rounded-full"
+            />
+          )}
+          <span>
+            Created by: {user.first_name} {user.last_name || ""}
+          </span>
+        </div>
+      )
+    }
+    <p class="italic mb-3" set:html={description} />
+    {content && <article class="[&>p]:bg-red-500" set:html={content} />}
+  </main>
+</Layout>

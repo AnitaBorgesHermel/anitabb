@@ -1,0 +1,82 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import type { Work } from "../../types/work";
+
+// Fetch works from Directus
+const response = await fetch(
+  " http://localhost:8055/items/works?fields=*,creator.*,creator.user.*,category.*",
+  {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  },
+);
+
+const data = await response.json();
+const works: Work[] = data.data;
+---
+
+<Layout title="Works Gallery">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Our Works</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {
+        works.map((work) => (
+          <article class="border rounded-lg overflow-hidden shadow-lg">
+            {work.image && (
+              <img
+                src={`http://localhost:8055/assets/${work.image}`}
+                alt={work.title}
+                class="w-full h-48 object-cover"
+              />
+            )}
+            {work.creator.user.avatar && (
+              <img
+                src={`http://localhost:8055/assets/${work.creator.user.avatar}`}
+                alt={`${work.creator.user.first_name}'s avatar`}
+                class="w-10 h-10 rounded-full"
+              />
+            )}
+            {work.description && (
+              <div class="p-4">
+                <h2 class="text-xl font-semibold mb-2">{work.title}</h2>
+                <p class="text-gray-600 mb-4">{work.description}</p>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-500">
+                    By {work.creator.firstname} {work.creator.lastname}
+                  </span>
+                  <span class="text-sm text-gray-500">
+                    {work.category.name}
+                  </span>
+                </div>
+                <a
+                  href={`/works/${work.id}`}
+                  class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Read More
+                </a>
+              </div>
+            )}
+            <div class="p-4">
+              <h2 class="text-xl font-semibold mb-2">{work.title}</h2>
+              <p class="text-gray-600 mb-4">{work.description}</p>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-500">
+                  By {work.creator.firstname} {work.creator.lastname}
+                </span>
+                <span class="text-sm text-gray-500">{work.category.name}</span>
+              </div>
+              <a
+                href={`/works/${work.id}`}
+                class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Read More
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </main>
+</Layout>
