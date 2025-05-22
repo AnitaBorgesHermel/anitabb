@@ -1,0 +1,23 @@
+# Directus URL
+@DIRECTUS_URL=http://localhost:8055
+
+# Directus Static Token
+@DIRECTUS_TOKEN=<YOUR_TOKEN>
+
+###
+
+GET {{DIRECTUS_URL}}/items/global
+
+###
+
+GET {{DIRECTUS_URL}}/items/pages
+
+###
+
+GET {{DIRECTUS_URL}}/users
+Authorization: Bearer {{DIRECTUS_TOKEN}}
+
+###
+
+GET {{DIRECTUS_URL}}/collections
+Authorization: Bearer {{DIRECTUS_TOKEN}}

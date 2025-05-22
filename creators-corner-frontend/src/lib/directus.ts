@@ -71,8 +71,16 @@ export type CreatorSchema = {
   } & Record<string, any>;
 };
 
+// Debug: print the Directus URL being used
+console.log("Directus URL:", import.meta.env.PUBLIC_DIRECTUS_URL);
+const directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || "http://localhost:8055";
+if (!directusUrl || typeof directusUrl !== "string" || !directusUrl.startsWith("http")) {
+  throw new Error(
+    `PUBLIC_DIRECTUS_URL is not set or is invalid: '${directusUrl}'. Please check your .env file and restart the dev server.`,
+  );
+}
 const directus = createDirectus<CreatorSchema>(
-  import.meta.env.PUBLIC_DIRECTUS_URL,
+  directusUrl,
 )
   .with(rest())
   .with(
@@ -87,12 +95,13 @@ export async function login(email: string, password: string) {
   try {
     const response = await directus.request(
       directusLogin(email, password, {
-        // AuthenticationMode : 'cookie'
         mode: "json",
       }),
     );
     return response;
-  } catch (error) {
+  } catch (err) {
+    // Always throw an Error object with a clear message
+    const error = err instanceof Error ? err : new Error(typeof err === "string" ? err : JSON.stringify(err));
     throw error;
   }
 }
@@ -100,7 +109,8 @@ export async function login(email: string, password: string) {
 export async function logout() {
   try {
     await directus.request(directusLogout());
-  } catch (error) {
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(typeof err === "string" ? err : JSON.stringify(err));
     throw error;
   }
 }
@@ -109,12 +119,16 @@ export async function getCurrentUser() {
   try {
     const user = await directus.request(
       readMe({
-        fields: ["*"], // Specify the fields you want to retrieve
+        fields: ["*"],
       }),
     );
     return user;
-  } catch (error) {
-    return null;
+  } catch (err) {
+    if (err instanceof Error) {
+      return null;
+    } else {
+      throw new Error(typeof err === "string" ? err : JSON.stringify(err));
+    }
   }
 }
 
